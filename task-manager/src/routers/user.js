@@ -1,7 +1,9 @@
 const express = require('express');
 const User = require('../models/user');
+const auth = require('../middleware/auth');
 const router = new express.Router();
 
+// signing up
 router.post('/users', async (req, res) => {
   // console.log(req.body);
   // res.send('Testing');
@@ -9,40 +11,54 @@ router.post('/users', async (req, res) => {
 
   try {
     await user.save();
-    res.status(201).send(user);
+    const token = await user.generateAuthToken();
+    res.status(201).send({
+      user,
+      token
+    });
   } catch (error) {
     res.status(400).send(error);
   }
-
   await user.save();
-  // user
-  //   .save()
-  //   .then(() => {
-  //     // console.log(Success!);
-  //     res.status(201).send(user);
-  //   })
-  //   .catch(error => {
-  //     res.status(400);
-  //     res.send(error);
-  //     //same res.status(400).send(error);
-  //   });
 });
 
-router.get('/users', async (req, res) => {
+// logging in
+// find user by email and password
+router.post('/users/login', async (req, res) => {
   try {
-    const users = await User.find({}); //empty object finds all
-    res.send(users);
+    const user = await User.findByCredentials(
+      req.body.email,
+      req.body.password
+    );
+    const token = await user.generateAuthToken();
+    res.send({
+      user,
+      token
+    });
   } catch (error) {
-    res.status(500).send(error);
+    res.status(400).send('Cannot login');
   }
-  //empty object finds all
-  // User.find({})
-  //   .then(users => {
-  //     res.send(users);
-  //   })
-  //   .catch(error => {
-  //     res.status(500).send(error);
-  //   });
+});
+
+//logging out
+router.post('/users/logout', auth, async (req, res) => {
+  try {
+    req.user.tokens = req.user.tokens.filter(token => {
+      // returns true when its NOT the one we are looking for
+      // if its false it gets removed
+      return token.token !== req.token;
+    });
+    await req.user.save();
+    res.send();
+  } catch (error) {
+    console.log('logout error');
+    res.status(500).send();
+  }
+});
+
+// only runs if user is authenticated
+router.get('/users/me', auth, async (req, res) => {
+  res.send(req.user);
 });
 
 //find specific user
@@ -59,18 +75,6 @@ router.get('/users/:id', async (req, res) => {
   } catch (error) {
     res.status(500).send(error);
   }
-
-  // User.findById(_id)
-  //   .then(user => {
-  //     //if mongo connects but does not find a user
-  //     if (!user) {
-  //       return res.status(404).send();
-  //     }
-  //     res.send(user);
-  //   })
-  //   .catch(error => {
-  //     res.status(500).send(error);
-  //   });
 });
 
 //update a user
@@ -82,7 +86,9 @@ router.patch('/users/:id', async (req, res) => {
   );
 
   if (!isValidOperation) {
-    return res.status(400).send({ error: 'Invalid updates!' });
+    return res.status(400).send({
+      error: 'Invalid updates!'
+    });
   }
 
   try {

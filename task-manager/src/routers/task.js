@@ -72,7 +72,6 @@ router.get('/tasks/:id', async (req, res) => {
 });
 
 router.patch('/tasks/:id', async (req, res) => {
-    const _id = req.params.id;
     const update = req.body;
 
     //only fields user can update
@@ -92,10 +91,14 @@ router.patch('/tasks/:id', async (req, res) => {
     try {
         // findByIdAndUpdate(what to update, data to update, options
         // (new returns update user instead of found user))
-        const task = await Task.findByIdAndUpdate(_id, update, {
-            new: true,
-            runValidators: true
-        });
+        const task = await Task.findById(req.params.id);
+        updates.forEach(update => (task[update] = req.body[update]));
+        await task.save();
+
+        // const task = await Task.findByIdAndUpdate(_id, update, {
+        //     new: true,
+        //     runValidators: true
+        // });
 
         //if mongo connects but does not find the task
         if (!task) {
