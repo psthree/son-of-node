@@ -26,6 +26,7 @@ router.post('/users', async (req, res) => {
 // find user by email and password
 router.post('/users/login', async (req, res) => {
   try {
+    console.log('logging in');
     const user = await User.findByCredentials(
       req.body.email,
       req.body.password
@@ -58,6 +59,7 @@ router.post('/users/logout', auth, async (req, res) => {
 
 // only runs if user is authenticated
 router.get('/users/me', auth, async (req, res) => {
+  console.log('getting user info/me');
   res.send(req.user);
 });
 
