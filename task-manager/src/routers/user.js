@@ -58,7 +58,8 @@ router.post('/users/logout', auth, async (req, res) => {
 });
 
 // only runs if user is authenticated
-router.get('/users/me', auth, async (req, res) => {
+// router.get('/users/me', auth, async (req, res) => {
+router.get('/users/me', async (req, res) => {
   console.log('getting user info/me');
   res.send(req.user);
 });
