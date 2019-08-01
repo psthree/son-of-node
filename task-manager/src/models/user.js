@@ -50,6 +50,27 @@ const userSchema = new mongoose.Schema({
     }
   ]
 });
+
+//virtual property
+//relationship between user and task
+//virtual('name', {felids})
+userSchema.virtual('tasks', {
+  ref: 'Task',
+  localField: '_id',
+  foreignField: 'owner'
+});
+
+userSchema.methods.toJSON = function() {
+  const user = this;
+  // get an user object that has all of mongoose extra stuff removed
+  const userObject = user.toObject();
+  //remove data we do not want to send
+  delete userObject.password;
+  delete userObject.tokens;
+
+  return userObject;
+};
+
 userSchema.methods.generateAuthToken = async function() {
   const user = this;
   const token = jwt.sign({ _id: user._id.toString() }, 'thisismynewcourse');

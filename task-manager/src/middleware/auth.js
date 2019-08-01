@@ -26,7 +26,7 @@ const auth = async (req, res, next) => {
     //user found run route
     next();
   } catch (error) {
-    console.log('E _id');
+    //console.log('E _id');
     res.status(401).send({
       error: ' Please authenticate.'
     });

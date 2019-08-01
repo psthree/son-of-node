@@ -1,11 +1,14 @@
 const express = require('express');
-const Task = require('../models/task')
+const Task = require('../models/task');
+const auth = require('../middleware/auth.js');
 const router = new express.Router();
 
-
-router.post('/tasks', async (req, res) => {
-    const task = new Task(req.body);
-    //console.log(req.body);
+router.post('/tasks', auth, async (req, res) => {
+    const task = new Task({
+        ...req.body,
+        owner: req.user._id
+    });
+    console.log('Task : ', task);
 
     try {
         await task.save();
@@ -115,18 +118,16 @@ router.patch('/tasks/:id', async (req, res) => {
 router.delete('/tasks/:id', async (req, res) => {
     const _id = req.params.id;
     try {
-        const task = await Task.findByIdAndDelete(_id)
+        const task = await Task.findByIdAndDelete(_id);
         //if task no found
         if (!task) {
             return res.status(404).send('No task with that ID found');
         }
         //default status is 200 no need to set
         res.send(task);
-
     } catch (error) {
         res.status(500).send(error);
     }
-
-})
+});
 
 module.exports = router;

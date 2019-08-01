@@ -26,18 +26,20 @@ router.post('/users', async (req, res) => {
 // find user by email and password
 router.post('/users/login', async (req, res) => {
   try {
-    console.log('logging in');
+    console.log('logging in', req.body.email, req.body.password);
     const user = await User.findByCredentials(
       req.body.email,
       req.body.password
     );
+
     const token = await user.generateAuthToken();
+    console.log('logging in 2', token);
     res.send({
       user,
       token
     });
   } catch (error) {
-    res.status(400).send('Cannot login');
+    res.status(400).send('not loging in');
   }
 });
 
@@ -57,31 +59,45 @@ router.post('/users/logout', auth, async (req, res) => {
   }
 });
 
+// logout all sessions, that is delete all tokens
+router.post('/users/logoutAll', auth, async (req, res) => {
+  try {
+    req.user.tokens = [];
+    await req.user.save();
+    // will send a 200 by default
+    console.log('logout all');
+    res.send();
+  } catch (error) {
+    res.status(500).send();
+  }
+});
+
 // only runs if user is authenticated
-// router.get('/users/me', auth, async (req, res) => {
-router.get('/users/me', async (req, res) => {
+router.get('/users/me', auth, async (req, res) => {
+  // router.get('/users/me', async (req, res) => {
   console.log('getting user info/me');
   res.send(req.user);
 });
 
 //find specific user
-router.get('/users/:id', async (req, res) => {
-  //console.log(req.params);
-  const _id = req.params.id;
-  try {
-    const user = await User.findById(_id);
-    //if mongo connects but does not find a user
-    if (!user) {
-      return res.status(404).send();
-    }
-    res.send(user);
-  } catch (error) {
-    res.status(500).send(error);
-  }
-});
+// ***** should not ever need to use this ****
+// router.get('/users/:id', async (req, res) => {
+//   //console.log(req.params);
+//   const _id = req.params.id;
+//   try {
+//     const user = await User.findById(_id);
+//     //if mongo connects but does not find a user
+//     if (!user) {
+//       return res.status(404).send();
+//     }
+//     res.send(user);
+//   } catch (error) {
+//     res.status(500).send(error);
+//   }
+// });
 
 //update a user
-router.patch('/users/:id', async (req, res) => {
+router.patch('/users/me', auth, async (req, res) => {
   const updates = Object.keys(req.body);
   const allowedUpdates = ['name', 'email', 'password', 'age'];
   const isValidOperation = updates.every(update =>
@@ -95,33 +111,23 @@ router.patch('/users/:id', async (req, res) => {
   }
 
   try {
-    const user = await User.findById(req.params.id);
+    updates.forEach(update => (req.user[update] = req.body[update]));
+    await req.user.save();
 
-    updates.forEach(update => (user[update] = req.body[update]));
-    await user.save();
-
-    if (!user) {
-      return res.status(404).send();
-    }
-
-    res.send(user);
+    res.send(req.user);
   } catch (e) {
     res.status(400).send(e);
   }
 });
 
-router.delete('/users/:id', async (req, res) => {
-  const _id = req.params.id;
-
+router.delete('/users/me', auth, async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(_id);
+    //req.user is supplied by auth.js
+    //console.log('delete user', req.user);
+    await req.user.remove();
 
-    //if user not found
-    if (!user) {
-      return res.status(404).send('No user with that ID found');
-    }
     //default status is 200 no need to set
-    res.send(user);
+    res.send(req.user);
   } catch (error) {
     res.status(500).send(error);
   }
