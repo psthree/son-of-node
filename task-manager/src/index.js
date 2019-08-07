@@ -31,18 +31,18 @@ app.listen(port, () => {
 
 const Task = require('./models/task');
 const User = require('./models/user');
-const main = async () => {
-  //gets task and adds user info
-  // const task = await Task.findById('5d41bee1a50a21034b074d5d');
-  // // adds User(owner) info task.owner
-  // await task.populate('owner').execPopulate();
-  // console.log('TASK: ', task);
-  //gets task by user 5d4067bb37636e02fd7eeb9d xxx
-  const user = await User.findById('5d4067bb37636e02fd7eeb9d');
-  await user.populate('tasks').execPopulate();
-  console.log(user.tasks);
-};
-main();
+// const main = async () => {
+//   //gets task and adds user info
+//   // const task = await Task.findById('5d41bee1a50a21034b074d5d');
+//   // // adds User(owner) info task.owner
+//   // await task.populate('owner').execPopulate();
+//   // console.log('TASK: ', task);
+//   //gets task by user 5d4067bb37636e02fd7eeb9d xxx
+//   const user = await User.findById('5d4067bb37636e02fd7eeb9d');
+//   await user.populate('tasks').execPopulate();
+//   console.log(user.tasks);
+// };
+// main();
 
 // const jwt = require('jsonwebtoken');
 

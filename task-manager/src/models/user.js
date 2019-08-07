@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const Task = require('./task');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -41,14 +42,14 @@ const userSchema = new mongoose.Schema({
       }
     }
   },
-  tokens: [
-    {
-      token: {
-        type: String,
-        required: true
-      }
+  tokens: [{
+    token: {
+      type: String,
+      required: true
     }
-  ]
+  }]
+}, {
+  timestamps: true
 });
 
 //virtual property
@@ -60,7 +61,7 @@ userSchema.virtual('tasks', {
   foreignField: 'owner'
 });
 
-userSchema.methods.toJSON = function() {
+userSchema.methods.toJSON = function () {
   const user = this;
   // get an user object that has all of mongoose extra stuff removed
   const userObject = user.toObject();
@@ -71,12 +72,16 @@ userSchema.methods.toJSON = function() {
   return userObject;
 };
 
-userSchema.methods.generateAuthToken = async function() {
+userSchema.methods.generateAuthToken = async function () {
   const user = this;
-  const token = jwt.sign({ _id: user._id.toString() }, 'thisismynewcourse');
+  const token = jwt.sign({
+    _id: user._id.toString()
+  }, 'thisismynewcourse');
 
   //add to token array(of objects) for user
-  user.tokens = user.tokens.concat({ token });
+  user.tokens = user.tokens.concat({
+    token
+  });
   //save to database
   await user.save();
 
@@ -101,10 +106,10 @@ userSchema.statics.findByCredentials = async (email, password) => {
 
   return user;
 };
-
+// middle ware
 // hash the plain text password before saving
 // cannot be an arrow function due to binding issues
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   //this is the doc to be saved
   const user = this;
   // if the password is modified (happens when created and when updated)
@@ -116,6 +121,17 @@ userSchema.pre('save', async function(next) {
   // gets called when we are done here
   next();
 });
+
+// middleware
+// delete users task when user is removed/deleted
+userSchema.pre('remove', async function (next) {
+  const user = this;
+  await Task.deleteMany({
+    owner: user._id
+  })
+
+  next();
+})
 
 // user model
 // name of model and definition

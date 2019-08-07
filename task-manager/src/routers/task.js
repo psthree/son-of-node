@@ -29,15 +29,29 @@ router.post('/tasks', auth, async (req, res) => {
   //   });
 });
 
+
+// get tasks has the option to either select completed = true
+// or completed= false
 router.get('/tasks', auth, async (req, res) => {
-  //empty object finds all (attributes limit what is returned)
+  // empty object finds all (attributes limit what is returned)
   // adding owner only returns tasks owned by (logged in) user
 
+  // get the complete data from the url
+  const match = {};
+
+  if (req.query.completed) {
+    // have to convert the url parameter to a boolean (from a string)
+    // if its the string true set the value to boolean true
+    match.completed = req.query.completed === 'true';
+  }
+
   try {
-    const task = await Task.find({
-      owner: req.user._id
-    });
-    res.send(task);
+    await req.user.populate({
+      path: 'tasks',
+      match: match
+    }).execPopulate()
+
+    res.send(req.user.tasks);
   } catch (error) {
     res.status(500).send(error);
   }
