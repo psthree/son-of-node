@@ -29,16 +29,18 @@ router.post('/tasks', auth, async (req, res) => {
   //   });
 });
 
-
+// /tasks?completed=true
 // get tasks has the option to either select completed = true
 // or completed= false
+// options for pagination limit, skip
+// /tasks?limit&skip10
+// /task?sortBy=field:order (sortBy=createdAt:desc)
 router.get('/tasks', auth, async (req, res) => {
   // empty object finds all (attributes limit what is returned)
   // adding owner only returns tasks owned by (logged in) user
 
   // get the complete data from the url
   const match = {};
-
   if (req.query.completed) {
     // have to convert the url parameter to a boolean (from a string)
     // if its the string true set the value to boolean true
@@ -46,10 +48,17 @@ router.get('/tasks', auth, async (req, res) => {
   }
 
   try {
-    await req.user.populate({
-      path: 'tasks',
-      match: match
-    }).execPopulate()
+    await req.user
+      .populate({
+        path: 'tasks',
+        match: match,
+        options: {
+          // make sure user input is a number
+          limit: parseInt(req.query.limit),
+          skip: parseInt(req.query.skip)
+        }
+      })
+      .execPopulate();
 
     res.send(req.user.tasks);
   } catch (error) {
