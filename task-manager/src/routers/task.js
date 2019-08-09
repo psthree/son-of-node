@@ -41,10 +41,17 @@ router.get('/tasks', auth, async (req, res) => {
 
   // get the complete data from the url
   const match = {};
+  const sort = {};
   if (req.query.completed) {
     // have to convert the url parameter to a boolean (from a string)
     // if its the string true set the value to boolean true
     match.completed = req.query.completed === 'true';
+  }
+  if (req.query.sortBy) {
+    const parts = req.query.sortBy.split(':');
+    //first split the query
+    // then test the second part to see if its desc(-1) or asc(1)
+    sort[parts[0]] = parts[1] === 'desc' ? -1 : 1;
   }
 
   try {
@@ -55,7 +62,8 @@ router.get('/tasks', auth, async (req, res) => {
         options: {
           // make sure user input is a number
           limit: parseInt(req.query.limit),
-          skip: parseInt(req.query.skip)
+          skip: parseInt(req.query.skip),
+          sort: sort
         }
       })
       .execPopulate();
