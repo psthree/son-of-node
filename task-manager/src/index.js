@@ -31,44 +31,16 @@ app.listen(port, () => {
 
 const Task = require('./models/task');
 const User = require('./models/user');
-// const main = async () => {
-//   //gets task and adds user info
-//   // const task = await Task.findById('5d41bee1a50a21034b074d5d');
-//   // // adds User(owner) info task.owner
-//   // await task.populate('owner').execPopulate();
-//   // console.log('TASK: ', task);
-//   //gets task by user 5d4067bb37636e02fd7eeb9d xxx
-//   const user = await User.findById('5d4067bb37636e02fd7eeb9d');
-//   await user.populate('tasks').execPopulate();
-//   console.log(user.tasks);
-// };
-// main();
 
-// const jwt = require('jsonwebtoken');
+//testing file upload
+// const multer = require('multer');
+// const upload = multer({
+//   dest: 'images'
+// });
 
-// const myFunction = async () => {
-//   //returns new token
-//   const token = jwt.sign({ _id: '123abc' }, 'thisissecret', {
-//     expiresIn: '10 seconds'
-//   });
-//   console.log(token);
-
-//   const data = jwt.verify(token, 'thisissecret');
-//   console.log(data);
-// };
-
-// myFunction();
-
-//const bcrypt = require('bcryptjs');
-// const myFunction = async () => {
-//   //what user entered
-//   const password = 'red12345';
-//   const hashedPassword = await bcrypt.hash(password, 8);
-//   console.log(`org password ${password}, hash ${hashedPassword}`);
-//when the password to check is ran though bcrypt it should match the one in the database
-//   const isMatch = bcrypt.compare('red12345', hashedPassword);
-//   console.log('isMatch :', isMatch)
-// }
+// app.post('/upload', upload.single('upload'), (req, res) => {
+//   res.send();
+// });
 
 // cd /Users/peterstema/Documents/repos/node\ 3/site/task-manager/src
 // node index.js
