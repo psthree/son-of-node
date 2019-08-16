@@ -33,14 +33,35 @@ const Task = require('./models/task');
 const User = require('./models/user');
 
 //testing file upload
-// const multer = require('multer');
-// const upload = multer({
-//   dest: 'images'
-// });
-
-// app.post('/upload', upload.single('upload'), (req, res) => {
-//   res.send();
-// });
+const multer = require('multer');
+const upload = multer({
+  dest: 'images',
+  limits: {
+    fileSize: 1000000 // 1 meg
+  },
+  fileFilter(req, file, cb) {
+    if (!file.originalname.match(/\.(doc|docx)$/)) {
+      return cb(new Error('File must be Word doc'));
+    }
+    console.log('here');
+    cb(undefined, true);
+    // cb(new Error('File must be xxx'));
+    // cb(undefined, true);
+  }
+});
+const errorMiddleware = (req, res, next) => {
+  throw new Error('from my middle ware');
+};
+app.post(
+  '/upload',
+  upload.single('upload'),
+  (req, res) => {
+    res.send();
+  },
+  (error, req, res, next) => {
+    res.status(400).send({ error: error.message });
+  }
+);
 
 // cd /Users/peterstema/Documents/repos/node\ 3/site/task-manager/src
 // node index.js

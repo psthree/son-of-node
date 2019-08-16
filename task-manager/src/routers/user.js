@@ -136,11 +136,54 @@ router.delete('/users/me', auth, async (req, res) => {
 
 //upload an avatar
 const upload = multer({
-  dest: 'avatars'
+  // dest: 'avatars',
+  limits: {
+    fileSize: 1000000 // 1 meg
+  },
+  fileFilter(req, file, cb) {
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+      return cb(new Error('File must in JPEG or PNG image'));
+    }
+    cb(undefined, true);
+    // cb(new Error('File must be xxx'));
+    // cb(undefined, true);
+  }
 });
 
-router.post('/users/me/avatar', upload.single('avatar'), (req, res) => {
-  res.send()
-});
+router.post(
+  '/users/me/avatar',
+  auth,
+  upload.single('avatar'),
+  async (req, res) => {
+    req.user.avatar = req.file.buffer;
+    //update user profile (update database)
+    await req.user.save();
+    res.send();
+  },
+  // sends the error in json formate
+  (error, req, res, next) => {
+    res.status(400).send({
+      error: error.message
+    });
+  }
+);
+
+router.delete(
+  '/users/me/avatar',
+  auth,
+  async (req, res) => {
+    //see the field to undefined
+    req.user.avatar = undefined;
+    // update the database
+    await req.user.save();
+    res.send();
+  },
+  // sends the error in json formate
+  (error, req, res, next) => {
+    res.status(400).send({
+      error: error.message
+    });
+  }
+);
 
 module.exports = router;
