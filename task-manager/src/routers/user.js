@@ -186,4 +186,26 @@ router.delete(
   }
 );
 
+//fetching avatar and supplying link
+// http://localhost:3000/users/5d484cfdf42f73032b241e98/avatar
+router.get('/users/:id/avatar', async (req, res) => {
+  // may not have image
+  try {
+    const user = await User.findById(req.params.id);
+
+    //if no user or avatar
+    if (!user || !user.avatar) {
+      // not sending message if not found
+      throw new Error();
+    }
+    // send a response header
+    res.set('Content-Type', 'image/jpg');
+    // send the image data
+    res.send(user.avatar);
+  } catch (error) {
+    // if image not found
+    res.status(404).send();
+  }
+});
+
 module.exports = router;
